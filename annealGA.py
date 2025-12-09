@@ -152,12 +152,12 @@ def roulette_selection(population: List[List[int]],
 
 def crossover_one_point(parent1: List[int],
                         parent2: List[int]) -> List[int]:
-    """
+    '''
     Cross-over TC(H):
         Chọn 1 điểm cắt i ∈ {1, ..., n-1}
         z = x[0:i] + y[i:n]
     (Bài báo dùng 1..n+1, nhưng thường bỏ 2 điểm biên để tránh clone y hệt)
-    """
+    '''
     n = len(parent1)
     if n <= 1:
         return parent1[:]
