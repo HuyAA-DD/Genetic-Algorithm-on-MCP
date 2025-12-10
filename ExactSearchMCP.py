@@ -12,8 +12,6 @@ class Graph:
     def add_edge(self, u: int, v: int):
         if u == v:
             return
-        u = u - 1 #1 base  
-        v = v - 1 #1 base 
         self.adj[u][v] = self.adj[v][u] = True
 
     def has_edge(self, u: int, v: int) -> bool:
@@ -27,6 +25,8 @@ def read_graph_from_stdin() -> Graph:
     for _ in range(m):
         x, y = map(int, input().split())
         # vô hướng
+        x = x - 1
+        y = y - 1
         G.add_edge(x,y)
 
     # check
