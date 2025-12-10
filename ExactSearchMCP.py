@@ -1,44 +1,70 @@
 # Maximum Clique - Branch & Bound 
 
 import sys
+from typing import List, Tuple, Set
+
+class Graph:
+    def __init__(self, n: int):
+        self.n = n
+        # Ma trận kề kiểu bool cho dễ kiểm tra cạnh
+        self.adj = [[False] * n for _ in range(n)]
+
+    def add_edge(self, u: int, v: int):
+        if u == v:
+            return
+        u = u - 1 #1 base  
+        v = v - 1 #1 base 
+        self.adj[u][v] = self.adj[v][u] = True
+
+    def has_edge(self, u: int, v: int) -> bool:
+        return self.adj[u][v]
 
 # ---------- Đọc đồ thị ----------
-def read_graph_from_stdin():
+def read_graph_from_stdin() -> Graph:
     n, m = map(int, input().split())
-    adj = [[] for _ in range(n + 1)]
+    G = Graph(n)
 
     for _ in range(m):
         x, y = map(int, input().split())
         # vô hướng
-        adj[x].append(y)
-        adj[y].append(x)
+        G.add_edge(x,y)
+
+    # check
+    return G 
+
+def read_graph_from_file(filename) -> Graph:
+    with open(filename, 'r', encoding='utf-8') as f:
+        # Dòng 1: n đỉnh, m cạnh
+        n, m = map(int, f.readline().split())
+        G = Graph(n)
+
+        # M dòng tiếp: mỗi dòng là 1 cạnh x y
+        for _ in range(m):
+            x, y = map(int, f.readline().split())
+            # Nếu là đồ thị vô hướng
+            G.add_edge(x,y)
+
+    return G
+
+# ---------- Lấy danh sách kề  ----------
+def getadj(G : Graph) -> Tuple[int, List[List[int]]]:
+    n = G.n
+    adj = [[] for _ in range(n + 1)]
+
+    for x in range(n):
+        for y in range(x+1,n):
+            if G.has_edge(x,y):
+                adj[x].append(y)
+                adj[y].append(x)
 
     # check
     ''''
     for u in range(1, n + 1):
         print(u, ":", adj[u])
     '''
-    return n,m,adj
+    return n,adj
 
-def read_graph_from_file(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        # Dòng 1: n đỉnh, m cạnh
-        n, m = map(int, f.readline().split())
 
-        # Khởi tạo danh sách kề (1-based)
-        adj = [[] for _ in range(n + 1)]
-
-        # M dòng tiếp: mỗi dòng là 1 cạnh x y
-        for _ in range(m):
-            x, y = map(int, f.readline().split())
-            # Nếu là đồ thị vô hướng
-            adj[x].append(y)
-            adj[y].append(x)
-
-            # Nếu là đồ thị có hướng thì chỉ dùng:
-            # adj[x].append(y)
-
-    return n, m, adj
 
 # ---------- Thuật toán Maximum Clique ----------
 def maximum_clique(n, adj):
@@ -80,7 +106,8 @@ def maximum_clique(n, adj):
 
 # ---------- Chạy chương trình ----------
 if __name__ == "__main__":
-    n, m, adj = read_graph_from_stdin()
+    G = read_graph_from_stdin()
+    n, adj = getadj()
     if n == 0:
         sys.exit(0)
 
