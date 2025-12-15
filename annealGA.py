@@ -254,7 +254,7 @@ if __name__ == "__main__":
     G = read_graph_from_stdin()
     n = G.n
     
-    best_ind, best_size = Anneal_GA(G, population_size = 20 * n, theta = 0.3, verbose = True)
+    best_ind, best_size = Anneal_GA(G, population_size = 20 * n, theta = 0.1, verbose = True)
 
     print("\nBest clique size found:", best_size)
     print("Clique vertices:", [i + 1 for i, bit in enumerate(best_ind) if bit == 1])
