@@ -1,67 +1,10 @@
 import sys
 from typing import List, Tuple
-
-class Graph:
-    def __init__(self, n: int):
-        self.n = n
-        # Ma trận kề kiểu bool cho dễ kiểm tra cạnh
-        self.adj = [[False] * n for _ in range(n)]
-
-    def add_edge(self, u: int, v: int):
-        if u == v:
-            return
-        self.adj[u][v] = self.adj[v][u] = True
-
-    def has_edge(self, u: int, v: int) -> bool:
-        return self.adj[u][v]
-
-
-# ---------- Đọc đồ thị ----------
-def read_graph_from_stdin() -> Graph:
-    n, m = map(int, input().split())
-    G = Graph(n)
-
-    for _ in range(m):
-        x, y = map(int, input().split())
-        # input 1-based -> chuyển về 0-based
-        x -= 1
-        y -= 1
-        G.add_edge(x, y)
-
-    return G
-
-
-def read_graph_from_file(filename) -> Graph:
-    with open(filename, 'r', encoding='utf-8') as f:
-        n, m = map(int, f.readline().split())
-        G = Graph(n)
-
-        for _ in range(m):
-            x, y = map(int, f.readline().split())
-            x -= 1
-            y -= 1
-            G.add_edge(x, y)
-
-    return G
-
-
-# ---------- Lấy danh sách kề  ----------
-def getadj(G: Graph) -> Tuple[int, List[List[int]]]:
-    n = G.n
-    # adj[v] chứa danh sách các đỉnh kề với v (0..n-1)
-    adj: List[List[int]] = [[] for _ in range(n)]
-
-    for x in range(n):
-        for y in range(x + 1, n):
-            if G.has_edge(x, y):
-                adj[x].append(y)
-                adj[y].append(x)
-
-    return n, adj
+from BasicGraph import *
 
 
 # ---------- Thuật toán Maximum Clique ----------
-def maximum_clique(n: int, adj: List[List[int]]) -> List[int]:
+def maximum_clique(n: int, adj: List[List[int]]) -> Tuple[List[int],int]:
     # các đỉnh: 0..n-1
     vertices = list(range(n))
 
@@ -93,17 +36,17 @@ def maximum_clique(n: int, adj: List[List[int]]) -> List[int]:
             clique(C_new, P_new)
 
     clique([], vertices)
-    return best_clique
+    return best_clique, len(best_clique)
 
 
 # ---------- Chạy chương trình ----------
 if __name__ == "__main__":
-    G = read_graph_from_stdin()
+    G = generate_graph_n_p_k(10,0.5)
     n, adj = getadj(G)
     if n == 0:
         sys.exit(0)
 
-    C_star = maximum_clique(n, adj)
+    exact_ind, exact_fit = maximum_clique(n, adj)
     # In số đỉnh và các đỉnh (chuyển lại 1-based nếu cần)
-    print(len(C_star))
-    print(*[v + 1 for v in C_star])
+    print(exact_fit)
+    print(*[v + 1 for v in exact_ind])
