@@ -1,48 +1,7 @@
 import random
 from typing import List, Tuple, Set
-
-class Graph:
-    def __init__(self, n: int):
-        self.n = n
-        # Ma trận kề kiểu bool cho dễ kiểm tra cạnh
-        self.adj = [[False] * n for _ in range(n)]
-
-    def add_edge(self, u: int, v: int):
-        if u == v:
-            return
-        u = u - 1 #1 base  
-        v = v - 1 #1 base 
-        self.adj[u][v] = self.adj[v][u] = True
-
-    def has_edge(self, u: int, v: int) -> bool:
-        return self.adj[u][v]
-
-# ---------- Đọc đồ thị ----------
-def read_graph_from_stdin() -> Graph:
-    n, m = map(int, input().split())
-    G = Graph(n)
-
-    for _ in range(m):
-        x, y = map(int, input().split())
-        # vô hướng
-        G.add_edge(x,y)
-
-    # check
-    return G 
-
-def read_graph_from_file(filename) -> Graph:
-    with open(filename, 'r', encoding='utf-8') as f:
-        # Dòng 1: n đỉnh, m cạnh
-        n, m = map(int, f.readline().split())
-        G = Graph(n)
-
-        # M dòng tiếp: mỗi dòng là 1 cạnh x y
-        for _ in range(m):
-            x, y = map(int, f.readline().split())
-            # Nếu là đồ thị vô hướng
-            G.add_edge(x,y)
-
-    return G
+from BasicGraph import *
+from BinaryGA import *
 
 def edge_score(individual: List[int], G: Graph) -> float:
     '''
@@ -118,76 +77,21 @@ def diversity_T(population : List[List[int]], num_vertices : int,population_size
     div = 2 * (1 - div)
     return div
 
-def random_individual(n: int) -> List[int]:
-    """
-    Sinh 1 cá thể ngẫu nhiên trong {0,1}^n.
-    Ở đây chọn bit 1 với xác suất 0.5 (giống p=1/2 trong bài báo, có thể chỉnh).
-    """
-    p = 0.5
-    return [1 if random.random() < p else 0 for _ in range(n)]
-
-
-def roulette_selection(population: List[List[int]],
-                       fitness_values: List[float]) -> List[int]:
-    """
-    Reproduction TR(H):
-        Chọn 1 cá thể theo phân phối tỉ lệ với fitness.
-    Nếu tất cả fitness = 0 thì chọn ngẫu nhiên đều.
-    """
-    total_f = sum(fitness_values)
-    if total_f == 0:
-        # Không có cá thể nào tốt hơn -> chọn random
-        return random.choice(population)
-
-    r = random.uniform(0, total_f) # xác suất phân phối đều
-    acc = 0.0
-    for individual, f in zip(population, fitness_values):
-        acc += f
-        if acc >= r:
-            return individual #roulette selection
-        
-    # Do sai số float, fallback 
-    return population[-1]
-
-
-def crossover_one_point(parent1: List[int],
-                        parent2: List[int]) -> List[int]:
-    """
-    Cross-over TC(H):
-        Chọn 1 điểm cắt i ∈ {1, ..., n-1}
-        z = x[0:i] + y[i:n]
-    (Bài báo dùng 1..n+1, nhưng thường bỏ 2 điểm biên để tránh clone y hệt)
-    """
-    n = len(parent1)
-    if n <= 1:
-        return parent1[:]
-    cut = random.randint(1, n - 1)
-    return parent1[:cut] + parent2[cut:]
-
-
-def mutate(individual: List[int], pm: float) -> None:
-    """
-    Mutation TM(H):
-        Với xác suất pm, chọn 1 vị trí i random và flip bit.
-    """
-    if random.random() < pm:
-        n = len(individual)
-        i = random.randrange(n)
-        individual[i] = 1 - individual[i]
-
-def Anneal_GA(G : Graph, population_size : int = None, theta : float = 0.3, verbose : bool = False) -> Tuple[List[int], int]:
+def Anneal_GA(G : Graph, population_size : int = None, theta : float = 0.3, max_gen : int = 100, verbose : bool = False) -> Tuple[List[int], int]:
     '''
-    Docstring for Anneal_GA
+    Thuật toán luyện kim  Anneal_GA
     
-    :param G: Description
+    :param G: Đồ thị
     :type G: Graph
-    :param population_size: Description
+    :param population_size: kích thước quần thể 
     :type population_size: int
-    :param theta: Description
+    :param theta: threshold của độ đa dạng quần thể
     :type theta: float
-    :param verbose: Description
+    :param max_gen: số thế hệ tối đa
+    :type max_gen: int
+    :param verbose: cờ báo để in logs hay không 
     :type verbose: bool
-    :return: Description
+    :return: Trả về cặp cá thể tốt nhất và số 
     :rtype: Tuple[List[int], int]
     '''
     n = G.n
@@ -203,7 +107,7 @@ def Anneal_GA(G : Graph, population_size : int = None, theta : float = 0.3, verb
     eps = 1.05
     gen = 0
 
-    while divers >= theta:
+    while divers >= theta and gen < max_gen:
         # Tính fitness cho toàn bộ quần thể
         fitness_values = [
             fitness_annealed(ind, eps, G) for ind in population
@@ -215,8 +119,8 @@ def Anneal_GA(G : Graph, population_size : int = None, theta : float = 0.3, verb
                 best_size = f
                 best_individual = ind.copy()
 
-        if verbose and gen % 50 == 0:
-            print(f"Generation {gen:4d},population:{population},best clique size = {best_size}")
+        if verbose and gen % 1 == 0:
+            print(f"Generation {gen:4d},best clique size = {best_size}")
 
         # 1) Reproduction TR(H): tạo quần thể mới bằng roulette selection
         new_population = []
@@ -251,10 +155,10 @@ def Anneal_GA(G : Graph, population_size : int = None, theta : float = 0.3, verb
 if __name__ == "__main__":
     #random.seed(0)
 
-    G = read_graph_from_stdin()
+    G = generate_graph_n_p_k(10,0.5)
     n = G.n
     
-    best_ind, best_size = Anneal_GA(G, population_size = 20 * n, theta = 0.3, verbose = True)
+    best_ind, best_size = Anneal_GA(G, population_size = 20 * n, theta = 0.1, max_gen = 100, verbose = True)
 
     print("\nBest clique size found:", best_size)
     print("Clique vertices:", [i + 1 for i, bit in enumerate(best_ind) if bit == 1])
