@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple, Set
+from typing import List, Tuple, TextIO
 
 '''
 Module này implement 1 graph cơ bản và các hàm liên quan 
@@ -101,24 +101,27 @@ def getadj(G: Graph) -> Tuple[int, List[List[int]]]:
 
     return n, adj
 
-def printGraph(G : Graph) -> None:
+def printGraph(G: Graph, file: TextIO = None) -> None:
     '''
-    In ra đồ thị G ở file 
+    In ra đồ thị G (mặc định ra stdout, hoặc ra file nếu truyền vào)
     '''
-    n = G.n # số đỉnh 
+    if file is None:
+        import sys
+        file = sys.stdout
 
-    m = 0 # số cạnh
+    n = G.n
+    m = 0
 
     for x in range(n):
-        for y in range(x+1,n):
-            if G.has_edge(x,y):
+        for y in range(x+1, n):
+            if G.has_edge(x, y):
                 m += 1
-    
-    print(f"{n} {m}")
+
+    print(f"{n} {m}", file=file)
     for x in range(n):
-        for y in range(x+1,n):
-            if G.has_edge(x,y):
-                print(f"{x} {y}")
+        for y in range(x+1, n):
+            if G.has_edge(x, y):
+                print(f"{x} {y}", file=file)
     
 def generate_graph_n_p_k(n: int, p: float, k: int = 0) -> Graph:
     """
