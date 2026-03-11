@@ -41,7 +41,7 @@ def maximum_clique(n: int, adj: List[List[int]]) -> Tuple[List[int],int]:
 
 # ---------- Chạy chương trình ----------
 if __name__ == "__main__":
-    G = generate_graph_n_p_k(10,0.5)
+    G = read_graph_from_file("RandGenGraph/n_64/p_05/graph00.txt")
     n, adj = getadj(G)
     if n == 0:
         sys.exit(0)

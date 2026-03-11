@@ -2,6 +2,9 @@ import random
 from typing import List, Tuple, Set
 from BasicGraph import *
 from BinaryGA import*
+import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 def is_clique(individual: List[int], G : Graph) -> bool:
     """
@@ -38,7 +41,7 @@ def genetic_max_clique(
     pm: float = 0.01,
     generations: int = 1000,
     verbose: bool = False,
-) -> Tuple[List[int], int]:
+) -> Tuple[List[int], List[int]]:
     """
     Cài đặt Simple Genetic Algorithm cho bài toán MAX-CLIQUE
     theo đúng mô tả mục 2.1 trong bài Carter & Park.
@@ -60,8 +63,8 @@ def genetic_max_clique(
     -------
     best_individual : List[int]
         Cá thể tốt nhất tìm được (mã nhị phân).
-    best_fitness : int
-        Kích thước clique lớn nhất tìm được.
+    fitness_over_time : List[int]
+        Danh sách kích thước clique lớn nhất tìm được qua các thế hệ.
     """
     n = G.n
     if population_size is None:
@@ -70,6 +73,7 @@ def genetic_max_clique(
     # Khởi tạo quần thể H(0)
     population = [random_individual(n) for _ in range(population_size)] #có thể chỉnh p
 
+    fitness_over_time = []
     best_individual = None
     best_fitness = 0
 
@@ -86,6 +90,7 @@ def genetic_max_clique(
                 best_fitness = f
                 best_individual = ind.copy()
 
+        fitness_over_time.append(best_fitness)
         if verbose and gen % 10 == 0:
             print(f"Generation {gen:4d},best clique size = {best_fitness}")
 
@@ -111,23 +116,31 @@ def genetic_max_clique(
 
         population = crossed_population
 
-    return best_individual, best_fitness
+    return best_individual, fitness_over_time
 
-
-# Ví dụ dùng thử
 if __name__ == "__main__":
     #random.seed(0)
-
-    G = generate_graph_n_p_k(10,0.5)
+    
+    start = time.perf_counter()
+    G = read_graph_from_file("RandGenGraph/n_64/p_05/graph00.txt")
     n = G.n
     
-    best_ind, best_fit = genetic_max_clique(
+    simple_ind, simple_fit_gens = genetic_max_clique(
         G,
         population_size=20*n,
         pm=0.02,
-        generations=1000,
+        generations=200,
         verbose=True,
     )
+    end = time.perf_counter()
+    simple_elapsed = end - start
 
-    print("\nBest clique size found:", best_fit)
-    print("Clique vertices:", [i + 1 for i, bit in enumerate(best_ind) if bit == 1])
+    print("\nBest clique size found:", simple_fit_gens[-1])
+    print("Clique vertices:", [i + 1 for i, bit in enumerate(simple_ind) if bit == 1])
+    print(f"Runtime: {simple_elapsed:.6f} seconds")
+
+    #vẽ biểu đồ : 
+    simple_fit_gens = np.array(simple_fit_gens)
+    plt.plot(simple_fit_gens)
+    plt.show()
+

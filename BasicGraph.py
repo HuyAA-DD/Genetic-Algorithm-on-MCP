@@ -34,7 +34,7 @@ def read_graph_from_stdin() -> Graph:
     # check
     return G 
 
-def read_graph_from_file(filename) -> Graph:
+def read_graph_from_file(filename : str) -> Graph:
     with open(filename, 'r', encoding='utf-8') as f:
         # Dòng 1: n đỉnh, m cạnh
         n, m = map(int, f.readline().split())
@@ -101,14 +101,16 @@ def getadj(G: Graph) -> Tuple[int, List[List[int]]]:
 
     return n, adj
 
-def printGraph(G: Graph, file: TextIO = None) -> None:
+def printGraph(G: Graph, filename: str = None) -> None:
     '''
     In ra đồ thị G (mặc định ra stdout, hoặc ra file nếu truyền vào)
     '''
-    if file is None:
+    file : TextIO = None
+    if filename is None:
         import sys
         file = sys.stdout
-
+    else:
+        file = open(filename,"w")
     n = G.n
     m = 0
 
@@ -122,6 +124,7 @@ def printGraph(G: Graph, file: TextIO = None) -> None:
         for y in range(x+1, n):
             if G.has_edge(x, y):
                 print(f"{x} {y}", file=file)
+    file.close()
     
 def generate_graph_n_p_k(n: int, p: float, k: int = 0) -> Graph:
     """
